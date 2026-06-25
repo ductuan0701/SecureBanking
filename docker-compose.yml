@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    container_name: securebanking-backend
+    restart: unless-stopped
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./backend/.env:/app/.env
+    networks:
+      - sb-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: securebanking-frontend
+    restart: unless-stopped
+    ports:
+      - "89:80"
+    depends_on:
+      - backend
+    networks:
+      - sb-network
+
+networks:
+  sb-network:
+    driver: bridge
