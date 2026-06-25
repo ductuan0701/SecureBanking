@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SecureBanking — Hệ thống quản trị giao dịch ngân hàng bảo mật">
+    <title>SecureBanking — Đăng nhập</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div class="logo-icon">🏦</div>
+                <h2>SecureBanking</h2>
+                <p class="subtitle">Đăng nhập vào hệ thống giao dịch bảo mật</p>
+            </div>
+
+            <div id="alertBox" class="alert-custom"></div>
+
+            <form id="loginForm">
+                <div class="form-group-custom">
+                    <label for="username">Tên đăng nhập</label>
+                    <input type="text" id="username" class="form-control-custom"
+                           placeholder="Nhập tên đăng nhập" required autocomplete="username">
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" class="form-control-custom"
+                           placeholder="Nhập mật khẩu" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" id="btnLogin" class="btn-primary-custom" style="margin-top: 0.5rem;">
+                    Đăng nhập
+                </button>
+            </form>
+
+            <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-bottom: 0.5rem;">Tài khoản demo</p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-sm-action btn-lock" onclick="fillDemo('admin','admin123')" style="font-size: 0.75rem;">
+                        Admin
+                    </button>
+                    <button class="btn-sm-action btn-lock" onclick="fillDemo('user1','user123')" style="font-size: 0.75rem;">
+                        User 1
+                    </button>
+                    <button class="btn-sm-action btn-lock" onclick="fillDemo('user2','user123')" style="font-size: 0.75rem;">
+                        User 2
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Redirect if already logged in
+        if (Auth.isLoggedIn()) {
+            const role = Auth.getRole();
+            window.location.href = role === 'ROLE_ADMIN' ? 'admin-dashboard.html' : 'transaction.html';
+        }
+
+        function fillDemo(u, p) {
+            document.getElementById('username').value = u;
+            document.getElementById('password').value = p;
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Đăng nhập thất bại');
+                }
+
+                const data = await res.json();
+                Auth.setToken(data.token);
+                Auth.setUser({ username: data.username, role: data.role, userId: data.userId, fullName: data.fullName });
+
+                window.location.href = data.role === 'ROLE_ADMIN' ? 'admin-dashboard.html' : 'transaction.html';
+            } catch (err) {
+                showAlert('alertBox', err.message, 'danger');
+                btn.disabled = false;
+                btn.textContent = 'Đăng nhập';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SecureBanking — Admin Dashboard quản trị giao dịch">
+    <title>SecureBanking — Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;">
+            <a href="admin-dashboard.html" class="navbar-brand-custom" style="text-decoration: none;">
+                🏦 SecureBanking <span style="font-size: 0.7rem; font-weight: 500; -webkit-text-fill-color: var(--text-muted); margin-left: 4px;">ADMIN</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="user-info">
+                    <div class="user-avatar" id="navUserAvatar">A</div>
+                    <span id="navUserName">Admin</span>
+                </div>
+                <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h1>📊 Admin Dashboard</h1>
+            <p class="subtitle">Quản lý và giám sát toàn bộ giao dịch trong hệ thống</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-total animate-in">
+                <div class="stat-label">Tổng giao dịch</div>
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-icon">📊</div>
+            </div>
+            <div class="stat-card stat-amount animate-in">
+                <div class="stat-label">Tổng tiền giao dịch</div>
+                <div class="stat-value" id="statAmount" style="font-size: 1.4rem;">0 ₫</div>
+                <div class="stat-icon">💰</div>
+            </div>
+            <div class="stat-card stat-internal animate-in">
+                <div class="stat-label">Giao dịch nội bộ</div>
+                <div class="stat-value" id="statInternal">0</div>
+                <div class="stat-icon">🔄</div>
+            </div>
+            <div class="stat-card stat-interbank animate-in">
+                <div class="stat-label">Giao dịch liên ngân hàng</div>
+                <div class="stat-value" id="statInterbank">0</div>
+                <div class="stat-icon">🌐</div>
+            </div>
+        </div>
+
+        <div class="glass-card animate-in">
+            <h3>📋 Danh sách giao dịch</h3>
+
+            <div id="adminAlert" class="alert-custom"></div>
+
+            <div class="filter-bar">
+                <input type="text" id="searchUser" class="form-control-custom" placeholder="🔍 Tìm theo User...">
+                <input type="text" id="searchTxId" class="form-control-custom" placeholder="🔍 Tìm theo Mã GD...">
+                <select id="filterType" class="form-control-custom">
+                    <option value="">Tất cả loại</option>
+                    <option value="INTERNAL">Nội bộ</option>
+                    <option value="INTERBANK">Liên ngân hàng</option>
+                </select>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Mã giao dịch</th>
+                            <th>Khách hàng</th>
+                            <th>Loại</th>
+                            <th>Số tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <tr><td colspan="8" class="empty-state"><div class="icon">📭</div><p>Đang tải dữ liệu...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
