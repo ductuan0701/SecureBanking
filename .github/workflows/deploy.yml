@@ -23,6 +23,20 @@ jobs:
           script: |
             cd ~/SecureBanking
             git pull origin main
+            
+            # Xóa file/thư mục .env cũ để tránh lỗi "is a directory"
+            rm -rf ./backend/.env
+            
+            # Tự động tạo file .env mới trên server bằng các cấu hình an toàn từ CI/CD
+            cat <<EOF > ./backend/.env
+            DB_URL=jdbc:h2:mem:securebanking;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+            DB_DRIVER=org.h2.Driver
+            DB_USERNAME=sa
+            DB_PASSWORD=
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_EXPIRATION=86400000
+            EOF
+            
             docker compose down
             docker compose up -d --build
             docker image prune -f
