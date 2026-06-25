@@ -8,8 +8,8 @@ services:
     restart: unless-stopped
     ports:
       - "8099:8080"
-    volumes:
-      - ./backend/.env:/app/.env
+    env_file:
+      - ./backend/.env
     networks:
       - sb-network
 
