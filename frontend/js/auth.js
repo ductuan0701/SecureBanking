@@ -1,5 +1,4 @@
-
-const API_BASE = 'https://api.ductuan71.top';
+const API_BASE = 'https://api.ductuan71.top/api';
 
 const Auth = {
     getToken() {
@@ -38,7 +37,7 @@ const Auth = {
                 method: 'POST',
                 headers: this.authHeaders()
             });
-        } catch (e) {  }
+        } catch (e) { }
         this.clear();
         window.location.href = 'index.html';
     },
