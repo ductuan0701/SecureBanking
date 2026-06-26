@@ -1,0 +1,31 @@
+TÀI LIỆU LUỒNG TRIỂN KHAI CI/CD
+===============================
+
+1. MÔ TẢ LUỒNG TRIỂN KHAI
+- Tự động hóa quá trình đẩy code từ GitHub lên máy chủ Production bằng GitHub Actions.
+- Khi có code đẩy lên nhánh `main`, Github Actions dùng SSH kết nối máy chủ, lấy mã nguồn mới và chạy lại hệ thống bằng Docker Compose.
+
+2. CÁC BƯỚC CHÍNH CỦA WORKFLOW
+- Bước 1: Checkout mã nguồn từ GitHub về máy chủ ảo.
+- Bước 2: Dùng `appleboy/ssh-action` để kết nối bảo mật SSH vào máy chủ thật.
+- Bước 3: Chạy các lệnh Bash:
+  * `git pull`: Cập nhật mã nguồn mới.
+  * `docker compose down`: Dừng hệ thống cũ.
+  * `docker compose up -d --build`: Build lại Docker Image và chạy hệ thống.
+  * `docker image prune -f`: Dọn dẹp image rác
+
+3. SECRET DÙNG ĐỂ LÀM GÌ
+- Dùng để cất giữ an toàn các thông tin nhạy cảm (Password VPS, JWT Secret...) trên GitHub thay vì lưu cứng trong code.
+- Được tự động nạp vào hệ thống lúc deploy mà không bị lộ trên file log.
+
+4. HỆ THỐNG ĐƯỢC KIỂM TRA SAU DEPLOY NHƯ THẾ NÀO
+- Kiểm tra hệ điều hành: Chạy `docker compose ps` để xem 2 container có đang `Up`.
+- Kiểm tra log: Chạy `docker compose logs backend` đảm bảo không có lỗi lúc khởi động.
+- Kiểm tra người dùng: Truy cập web qua cổng 89, thử đăng nhập để đảm bảo luồng proxy API hoạt động.
+
+5. 5 LỖI KỸ THUẬT CÓ THỂ GẶP TRONG FLOW
+1. Lỗi "is a directory": Docker tự tạo nhầm thư mục `.env` khi file thực tế bị thiếu lúc mount.
+2. Lỗi cấu hình SSH: Kết nối thất bại do sai Password, sai IP hoặc bị Firewall chặn cổng 22.
+3. Lỗi Out of Memory (OOM): VPS thiếu RAM khi đóng gói Spring Boot, gây lỗi văng (Exit code 137).
+4. Lỗi 502 Bad Gateway: Nginx chạy tốt nhưng Backend sập (vd: thiếu biến môi trường, cấu hình lỗi).
+5. Lỗi xung đột Port: Cổng 89 hoặc 8099 trên VPS đã bị ứng dụng khác chiếm giữ từ trước.
