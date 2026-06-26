@@ -18,12 +18,12 @@ TÀI LIỆU KIỂM TRA SAU TRIỂN KHAI (POST-DEPLOY CHECK)
 2. Backend Crash (Sập): File `.env` thiếu biến `JWT_SECRET` hoặc sai thông tin DB.
 3. Site can't be reached: Tường lửa (Firewall) của VPS chưa mở cổng 89.
 4. Lỗi 502 Bad Gateway: Nginx chạy tốt nhưng Backend bị sập hoặc đứt mạng nội bộ.
-5. Sập VPS do cạn RAM: Thiếu RAM khi chạy `docker compose build` (Lỗi Exit 137).
+5. Sập VPS do cạn RAM: Thiếu RAM khi chạy `docker compose build` .
 
 4. NGUYÊN NHÂN ĐÁNG NGHI NGỜ NHẤT TRONG DỰ ÁN
 - Rủi ro lớn nhất là **tạo thủ công file `.env` trên Server**. Điều này làm mất tính "Tự động hóa hoàn toàn" của CI/CD. Nếu chuyển sang Server mới hoặc lỡ xóa file, ứng dụng sẽ sập ngay lập tức vì thiếu cấu hình.
-
+-> tôi nghĩ nếu làm chuẩn thì sẽ thêm lệnh tự tạo file .env trong deploy.yml 
 5. 3 VIỆC ƯU TIÊN XỬ LÝ ĐẦU TIÊN
-1. Đổi Database: Thay H2 (lưu trên RAM) bằng PostgreSQL/SQL Server có gắn Volume vật lý để không mất dữ liệu giao dịch khi khởi động lại.
+1. Có thêm lệnh kiểm tra ổ cứng df -h
 2. Khóa kín Backend: Xóa public port 8099, chỉ cho phép Nginx gọi API trong mạng nội bộ để chống tấn công trực tiếp.
 3. Cài đặt Cảnh báo: Tích hợp UptimeRobot vào `/actuator/health` để nhận tin báo động ngay khi server có dấu hiệu sập.
