@@ -40,11 +40,11 @@ const Auth = {
             });
         } catch (e) {  }
         this.clear();
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     },
     requireAuth() {
         if (!this.isLoggedIn()) {
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
             return false;
         }
         return true;
