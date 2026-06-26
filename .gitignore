@@ -26,7 +26,6 @@ out/
 
 *.jks
 *.p12
-*.pem
 
 *.log
 logs/
