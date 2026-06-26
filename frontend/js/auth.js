@@ -1,5 +1,5 @@
 
-const API_BASE = '/api';
+const API_BASE = 'https://api.ductuan71.top';
 
 const Auth = {
     getToken() {
