@@ -37,7 +37,7 @@ const Auth = {
                 method: 'POST',
                 headers: this.authHeaders()
             });
-        } catch (e) {  }
+        } catch (e) { }
         this.clear();
         window.location.href = 'index.html';
     },
