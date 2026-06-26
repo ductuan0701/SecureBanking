@@ -12,7 +12,7 @@ TÀI LIỆU LUỒNG TRIỂN KHAI CI/CD
   * `git pull`: Cập nhật mã nguồn mới.
   * `docker compose down`: Dừng hệ thống cũ.
   * `docker compose up -d --build`: Build lại Docker Image và chạy hệ thống.
-  * `docker image prune -f`: Dọn dẹp image rác.
+  * `docker image prune -f`: Dọn dẹp image rác
 
 3. SECRET DÙNG ĐỂ LÀM GÌ
 - Dùng để cất giữ an toàn các thông tin nhạy cảm (Password VPS, JWT Secret...) trên GitHub thay vì lưu cứng trong code.
