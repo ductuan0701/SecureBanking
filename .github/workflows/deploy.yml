@@ -15,14 +15,24 @@ jobs:
 
       - name: Deploy to Ubuntu Server via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          SSL_CERT: ${{ secrets.SSL_CERT }}
+          SSL_KEY: ${{ secrets.SSL_KEY }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          port: 24700                         
+          port: 24700
+          envs: SSL_CERT,SSL_KEY
           script: |
             cd ~/SecureBanking
             git pull origin main
+            
+            # Tạo thư mục và tiêm chứng chỉ SSL từ GitHub Secrets
+            mkdir -p nginx/ssl
+            echo "$SSL_CERT" > nginx/ssl/cert.pem
+            echo "$SSL_KEY" > nginx/ssl/key.pem
+            
             docker compose down
             docker compose up -d --build
             docker image prune -f
