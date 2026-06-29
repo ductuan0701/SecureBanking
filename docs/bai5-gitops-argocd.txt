@@ -1,0 +1,36 @@
+======================================================
+BÀI 5: GITOPS VÀ ARGOCD CƠ BẢN CHO HỆ THỐNG KUBERNETES
+======================================================
+
+1. CÁC KHÁI NIỆM CỐT LÕI:
+
+- GitOps là gì: Là một phương pháp vận hành hệ thống, trong đó toàn bộ cấu hình hạ tầng và ứng dụng được khai báo bằng file text (YAML) và lưu trữ tập trung trên Git. Mọi thay đổi của hệ thống phải thông qua quy trình Commit và Pull Request trên Git.
+- ArgoCD là gì: Là một công cụ mã nguồn mở chuyên dụng cho Kubernetes, hoạt động theo mô hình GitOps. Nó đóng vai trò là "người giám sát" liên tục so sánh trạng thái thực tế của K8s cluster với cấu hình khai báo trên Git, đảm bảo cả hai luôn giống hệt nhau.
+- Git là "Source of Truth": Nghĩa là "Nguồn chân lý duy nhất". Bất kể hiện tại server đang chạy cái gì, trạng thái được ghi nhận trên Git mới là trạng thái chuẩn nhất. Nếu K8s cluster bị xóa sổ hoàn toàn, chỉ cần kết nối cụm K8s mới vào repo Git này, toàn bộ hệ thống sẽ được phục hồi nguyên vẹn trong vài phút.
+
+2. PHÂN TÍCH VAI TRÒ TRONG LUỒNG GITOPS:
+- Source Code Repo: Nơi lập trình viên viết code ứng dụng (Java, Node.js).
+- Manifest Repo (Config Repo): Kho chứa riêng biệt các file cấu hình YAML của Kubernetes (Deployment, Service, Ingress...). Việc tách riêng kho này giúp hạn chế quyền truy cập và tránh việc build lại code không cần thiết khi chỉ thay đổi cấu hình hạ tầng.
+- GitHub Actions: Đóng vai trò CI (Continuous Integration). Nó chỉ làm nhiệm vụ test code, đóng gói thành Docker Image, đẩy lên Registry và dùng bot tự động sửa lại phiên bản (Image Tag) bên trong Manifest Repo.
+- ArgoCD: Đóng vai trò CD (Continuous Delivery). Được cài đặt nằm sâu bên trong cụm K8s, tự động "kéo" (Pull) file cấu hình mới từ Manifest Repo về và áp dụng (apply) vào cluster. Tuyệt đối không nhận lệnh trực tiếp từ bên ngoài.
+- Kubernetes Cluster: Môi trường đích thực thi các Container, cung cấp năng lực tính toán.
+
+3. ARGOCD KHÁC GÌ VỚI GITHUB ACTIONS?
+- GitHub Actions thiên về "Push" (Đẩy). Phải cấp cho nó thông tin xác thực (Credentials, Kubeconfig) của server thì nó mới đẩy code vào được. Việc này tiềm ẩn rủi ro lộ khóa bảo mật trên môi trường CI.
+- ArgoCD thiên về "Pull" (Kéo). ArgoCD nằm sẵn bên trong pháo đài K8s, nó chỉ cần quyền đọc (Read-only) repo Git để tự động kéo thay đổi về. Máy chủ không cần mở cửa cho bất kỳ tác nhân CI nào từ bên ngoài Internet.
+
+4. DRIFT VÀ SYNC LÀ GÌ?
+- Drift (Lệch chuẩn): Là hiện tượng trạng thái thực tế đang chạy trên K8s bị khác so với những gì định nghĩa trên Git. (Ví dụ: Một DevOps gõ lệnh thủ công `kubectl edit` để sửa port ứng dụng, khiến hệ thống thực tế không khớp với repo Git).
+- Sync (Đồng bộ): Là hành động của ArgoCD nhằm loại bỏ Drift. Nó sẽ ghi đè các thay đổi thực tế trên cluster để ép hệ thống quay về đúng nguyên bản định nghĩa trên Manifest Repo.
+
+5. 5 LỢI ÍCH CỦA GITOPS CHO KUBERNETES:
+- Bảo mật tuyệt đối: Không cần chia sẻ Kubeconfig hay SSH Key cho các nền tảng CI/CD bên ngoài.
+- Phục hồi thảm họa cực nhanh (Disaster Recovery): Xóa cụm cũ, tạo cụm mới, trỏ ArgoCD vào Git Repo là xong.
+- Lịch sử rõ ràng (Audit Trail): Mọi thay đổi hạ tầng (ai sửa, sửa lúc nào, vì sao sửa) đều được ghi lại qua lịch sử Commit của Git.
+- Rollback dễ dàng: Nếu bản cập nhật mới gây lỗi web, chỉ cần thao tác lệnh `git revert` trên repo để lùi về commit cũ, ArgoCD sẽ tự động hạ cấp ứng dụng trên cluster.
+- Tự động hóa hoàn toàn: Loại bỏ sự can thiệp thủ công (`kubectl apply`), giảm thiểu tối đa rủi ro do con người thao tác nhầm lẫn (Human Error).
+
+6. 3 RỦI RO / KHÓ KHĂN KHI CHUYỂN SANG GITOPS:
+- Khó khăn 1 (Đường cong học tập dốc): Đội ngũ kỹ thuật phải thành thạo nhiều công cụ cùng lúc: K8s, Helm/Kustomize, GitHub Actions và ArgoCD.
+- Khó khăn 2 (Quản lý đa kho lưu trữ): Phải thay đổi thói quen, quản lý song song nhiều Repo (Source Code riêng, Manifest riêng) khiến luồng làm việc ban đầu có vẻ cồng kềnh.
+- Khó khăn 3 (Quản lý dữ liệu nhạy cảm): Không thể lưu file chứa mật khẩu thực (Secrets, Database Passwords) dạng plain-text lên Git. Bắt buộc doanh nghiệp phải áp dụng thêm các công cụ mã hóa cấp cao khác như Sealed Secrets hoặc HashiCorp Vault.

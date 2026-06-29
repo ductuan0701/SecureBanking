@@ -1,0 +1,34 @@
+=========================================================
+BÁO CÁO KIẾN TRÚC & BẢO MẬT HỆ THỐNG
+Dự án: SecureBanking
+=========================================================
+
+1. Vai trò của Cloudflare
+- DNS: Phân giải tên miền ra IP siêu tốc.
+- CDN: Lưu cache file tĩnh, giúp web tải nhanh hơn.
+- WAF & Anti-DDoS: Lá chắn thép chặn hacker và tấn công từ chối dịch vụ.
+- SSL/TLS: Cấp chứng chỉ HTTPS miễn phí, mã hóa luồng dữ liệu.
+
+2. Mục đích của Subdomain thực tế
+- Phân tách hệ thống: Tách biệt rạch ròi Frontend (ductuan71.top), Admin (admin.ductuan71.top) và API (api.ductuan71.top).
+- Quản lý bảo mật: Dễ dàng cấu hình tường lửa riêng (Ví dụ: chỉ cho IP công ty truy cập Admin).
+- Mở rộng (Scaling): Linh hoạt trỏ subdomain sang các server khác nhau để cân bằng tải.
+
+3. Vì sao không được lộ Origin IP (IP gốc)?
+- Tránh bị Lộ IP thật, hacker sẽ "đi cửa sau" tấn công thẳng vào VPS, vô hiệu hóa hoàn toàn lớp khiên Cloudflare.
+
+4. Vì sao Database không được Public?
+- Bảo mật dữ liệu: DB chứa số dư, tài khoản. Đưa ra mạng public cực dễ dính Port Scan và Brute-force.
+- Nguyên tắc đặc quyền tối thiểu: Chỉ có duy nhất Backend trong mạng nội bộ (sb-network) mới cần và được quyền nói chuyện với DB.
+
+5. 5 Rủi ro kỹ thuật & Bảo mật hiện tại
+- Rủi ro 1 - Điểm chết duy nhất (SPOF): Toàn bộ hệ thống chạy chung 1 VPS. VPS sập là chết toàn hệ thống.
+- Rủi ro 2 - Nguy cơ mất dữ liệu: DB chưa được tự động Backup ra máy chủ khác (Offsite). Hỏng VPS = Mất trắng.
+- Rủi ro 3 - Downtime lúc Deploy: CI/CD dùng lệnh `docker compose down` gây gián đoạn dịch vụ vài chục giây mỗi lần cập nhật code.
+- Rủi ro 4 - Cổ chai Nginx: 1 container Nginx gánh toàn bộ traffic. Truy cập tăng đột biến dễ gây sập web do nghẽn cổ chai.
+- Rủi ro 5 - Quản lý Secret lỏng lẻo: Mật khẩu DB lưu rõ ràng trong file `.env`, hacker vào được VPS là mất mật khẩu.
+
+6. 3 Đề xuất cải thiện để vận hành Ổn định
+- Đề xuất 1 - HA & Load Balancing: Tách DB sang dùng Managed Database (AWS RDS), chạy nhiều server Backend để chia sẻ tải.
+- Đề xuất 2 - Zero-Downtime Deploy: Chuyển sang Kubernetes (K8s) hoặc Docker Swarm để nâng cấp code không bao giờ bị gián đoạn.
+- Đề xuất 3 - Khóa cứng VPS: Bật "Authenticated Origin Pulls" trên Cloudflare và cấu hình tường lửa UFW trên VPS ĐỂ CHỈ cho phép Cloudflare kết nối vào cổng 8443, chặn đứt mọi IP lạ.
